@@ -1,7 +1,13 @@
 FROM ubuntu:xenial
 
-ENV GOSU_VERSION 1.9
+RUN set -x \
+    && apt-get update \
+    && apt-get install -y locales \
+    && rm -rf /var/lib/apt/lists/* \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG en_US.utf8
 
+ENV GOSU_VERSION 1.9
 RUN set -x \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -16,11 +22,6 @@ RUN set -x \
     && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true \
-    && apt-cache search language-pack \
-        | cut -d ' ' -f 1 \
-        | grep -v '^language\-pack\-\(gnome\|kde\)\-' \
-        | grep -v '\-base$' \
-        | xargs apt-get install -y --force-yes --no-install-recommends \
     && cd /usr/local/src \
     && curl -s https://ftp.postgresql.org/pub/source/v9.5.3/postgresql-9.5.3.tar.gz | tar zxvf - \
     && cd postgresql-9.5.3 \
