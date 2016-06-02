@@ -10,6 +10,15 @@ POSTGRES_USER = os.environ["POSTGRES_USER"]
 POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 POSTGRES_DB = os.environ.get("POSTGRES_DB", POSTGRES_USER)
 
+CONFIG = {
+    "auth_method": os.environ.get("POSTGRES_CONFIG_AUTH_METHOD", "md5"),
+    "shared_buffers": os.environ.get("POSTGRES_CONFIG_SHARED_BUFFERS", "128MB"),
+    "temp_buffers": os.environ.get("POSTGRES_CONFIG_TEMP_BUFFERS", "8MB"),
+    "work_mem": os.environ.get("POSTGRES_CONFIG_WORK_MEM", "4MB"),
+    "maintenance_work_mem": os.environ.get("POSTGRES_CONFIG_MAINTENANCE_WORK_MEM", "64MB"),
+    "effective_cache_size": os.environ.get("POSTGRES_CONFIG_EFFECTIVE_CACHE_SIZE", "4GB")
+}
+
 
 def prepare():
     subprocess.run(["mkdir", "-p", PGDATA])
@@ -50,16 +59,15 @@ def run():
 def main():
     prepare()
     initdb()
-    ctx = {}
     write_config(
         "/etc/ec-db/pg_hba.conf",
         os.path.join(PGDATA, "pg_hba.conf"),
-        **ctx
+        **CONFIG
     )
     write_config(
         "/etc/ec-db/postgresql.conf",
         os.path.join(PGDATA, "postgresql.conf"),
-        **ctx
+        **CONFIG
     )
     configure()
     run()
