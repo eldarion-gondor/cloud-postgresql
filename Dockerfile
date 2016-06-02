@@ -16,6 +16,11 @@ RUN set -x \
     && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true \
+    && apt-cache search language-pack \
+        | cut -d ' ' -f 1 \
+        | grep -v '^language\-pack\-\(gnome\|kde\)\-' \
+        | grep -v '\-base$' \
+        | xargs apt-get install -y --force-yes --no-install-recommends \
     && cd /usr/local/src \
     && curl -s https://ftp.postgresql.org/pub/source/v9.5.3/postgresql-9.5.3.tar.gz | tar zxvf - \
     && cd postgresql-9.5.3 \
