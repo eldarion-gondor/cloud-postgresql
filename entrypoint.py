@@ -42,7 +42,7 @@ def configure():
     psql = ["psql", "-v", "ON_ERROR_STOP=1"]
     subprocess.run(psql + ["--username", "postgres"], input='CREATE DATABASE "{db}"'.format(db=POSTGRES_DB).encode("utf-8"))
     subprocess.run(psql + ["--username", "postgres"], input="""{op} USER "{user}" WITH SUPERUSER PASSWORD '{password}'""".format(
-        op="ALTER" if POSTGRES_USER else "CREATE",
+        op="ALTER" if POSTGRES_USER == "postgres" else "CREATE",
         user=POSTGRES_USER,
         password=POSTGRES_PASSWORD
     ).encode("utf-8"))
