@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 
-PGDATA = os.environ.get("PGDATA", "/data/db")
+PGDATA = os.environ.setdefault("PGDATA", "/data/db")
 POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 APP_USER = os.environ.get("APP_USER", "app")
 APP_PASSWORD = os.environ["APP_PASSWORD"]
