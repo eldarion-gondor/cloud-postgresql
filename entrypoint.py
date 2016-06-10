@@ -6,9 +6,10 @@ import sys
 
 
 PGDATA = os.environ.get("PGDATA", "/data/db")
-POSTGRES_USER = os.environ["POSTGRES_USER"]
 POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-POSTGRES_DB = os.environ.get("POSTGRES_DB", POSTGRES_USER)
+APP_USER = os.environ.get("APP_USER", "app")
+APP_PASSWORD = os.environ["APP_PASSWORD"]
+APP_DB = os.environ.get("APP_DB", APP_USER)
 
 CONFIG = {
     "auth_method": os.environ.get("POSTGRES_CONFIG_AUTH_METHOD", "md5"),
@@ -40,12 +41,26 @@ def write_config(src, dest, **ctx):
 def configure():
     subprocess.run(["gosu", "postgres", "pg_ctl", "-D", PGDATA, "-o", "-c listen_addresses='localhost'", "-w", "start"])
     psql = ["psql", "-v", "ON_ERROR_STOP=1"]
-    subprocess.run(psql + ["--username", "postgres"], input='CREATE DATABASE "{db}"'.format(db=POSTGRES_DB).encode("utf-8"))
-    subprocess.run(psql + ["--username", "postgres"], input="""{op} USER "{user}" WITH SUPERUSER PASSWORD '{password}'""".format(
-        op="ALTER" if POSTGRES_USER == "postgres" else "CREATE",
-        user=POSTGRES_USER,
-        password=POSTGRES_PASSWORD
-    ).encode("utf-8"))
+    subprocess.run(
+        psql + ["--username", "postgres"],
+        input="""ALTER USER postgres WITH PASSWORD '{password}'""".format(
+            password=POSTGRES_PASSWORD,
+        ).encode("utf-8"),
+    )
+    subprocess.run(
+        psql + ["--username", "postgres"],
+        input="""CREATE USER "{user}" WITH PASSWORD '{password}'""".format(
+            user=APP_USER,
+            password=APP_PASSWORD,
+        ).encode("utf-8"),
+    )
+    subprocess.run(
+        psql + ["--username", "postgres"],
+        input="""CREATE DATABASE "{db}" WITH OWNER '{user}'""".format(
+            db=APP_DB,
+            user=APP_USER,
+        ).encode("utf-8"),
+    )
     subprocess.run(["gosu", "postgres", "pg_ctl", "-D", PGDATA, "-m", "fast", "-w", "stop"])
 
 
